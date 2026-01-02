@@ -1,7 +1,6 @@
 package com.unnamed.blotcounter;
 
 import static android.graphics.Color.BLACK;
-import static android.graphics.Color.BLUE;
 import static android.graphics.Color.RED;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
@@ -24,12 +23,10 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.activity.ComponentActivity;
-import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AlertDialog;
+import androidx.activity.EdgeToEdge;
+
 
 import java.util.Stack;
 import java.util.Timer;
@@ -40,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
     TextView textView1, textView4;
     TextView roundNumber, roundScore, roundScoreRed, terz1, terz2, we, you, quansh;
+    TextView roundEdit;
     int roundTerz1, roundTerz2, roundNumberInt;
     String result;
     TextView roundTextView;
@@ -52,8 +50,9 @@ public class MainActivity extends AppCompatActivity {
 
     private int secondsPassed = 0;
     private static Timer timer = new Timer();
+    public int round_terz1, round_terz2, plus_score, minus_score, roundScoreWritten;
 
-    @SuppressLint("MissingInflatedId")
+    @SuppressLint({"MissingInflatedId", "WrongViewCast"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
         roundScore = findViewById(R.id.roundScore);
         roundScoreRed = findViewById(R.id.roundScoreRed);
         quansh = findViewById(R.id.quansh);
+        roundEdit = findViewById(R.id.roundEdit);
         textView1.setEnabled(false);
         roundScore.setEnabled(false);
         textView4.setEnabled(false);
@@ -118,6 +118,10 @@ public class MainActivity extends AppCompatActivity {
             } else if (!sharped) {
                 setQuansh(quansh);
             }
+        });
+
+        roundEdit.setOnClickListener(v -> {
+            showRoundEditDialog();
         });
 
     }
@@ -751,7 +755,7 @@ public class MainActivity extends AppCompatActivity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Team " + team + " wins!");
-        builder.setMessage("Time Elapsed: " + timeElapsed + "\nStart over?");
+        builder.setMessage("Time Elapsed: " + timeElapsed + "Start over?");
         builder.setPositiveButton("OK", (dialog, which) -> {
             // Reset timer and go to StartActivity
             Intent intent = new Intent(MainActivity.this, StartActivity.class);
@@ -859,6 +863,212 @@ public class MainActivity extends AppCompatActivity {
                 return a / b;
         }
         return 0;
+    }
+
+    @SuppressLint("ResourceAsColor")
+    private void showRoundEditDialog() {
+        // Check if there's a current round to edit
+        if (roundTextView == null || roundTextView.getText().toString().isEmpty()) {
+            Toast.makeText(this, "No round to edit", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Create a ScrollView to hold the layout
+        ScrollView scrollView = new ScrollView(this);
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setGravity(Gravity.CENTER);
+        layout.setPadding(40, 20, 40, 20);
+        scrollView.addView(layout);
+
+        // Title
+        TextView titleText = new TextView(this);
+        titleText.setText("Խմբագրել խաղափուլը");
+        titleText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+        titleText.setTextColor(BLACK);
+        titleText.setTypeface(null, Typeface.BOLD);
+        titleText.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        titleParams.setMargins(0, 0, 0, 30);
+        titleText.setLayoutParams(titleParams);
+        layout.addView(titleText);
+
+        // Terz1 (Team 1 declarations)
+        TextView terz1Label = new TextView(this);
+        terz1Label.setText("Թերզ +:");
+        terz1Label.setTextSize(18);
+        terz1Label.setTextColor(BLACK);
+        layout.addView(terz1Label);
+
+        EditText terz1Edit = new EditText(this);
+        terz1Edit.setInputType(InputType.TYPE_CLASS_NUMBER);
+        terz1Edit.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        terz1Edit.setText(String.valueOf(roundTerz1));
+        terz1Edit.setTextColor(BLACK);
+        layout.addView(terz1Edit);
+
+        // Terz2 (Team 2 declarations)
+        TextView terz2Label = new TextView(this);
+        terz2Label.setText("Թերզ -:");
+        terz2Label.setTextSize(18);
+        terz2Label.setTextColor(BLACK);
+        LinearLayout.LayoutParams terz2LabelParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        terz2LabelParams.setMargins(0, 20, 0, 0);
+        terz2Label.setLayoutParams(terz2LabelParams);
+        layout.addView(terz2Label);
+
+        EditText terz2Edit = new EditText(this);
+        terz2Edit.setInputType(InputType.TYPE_CLASS_NUMBER);
+        terz2Edit.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        terz2Edit.setText(String.valueOf(roundTerz2));
+        terz2Edit.setTextColor(BLACK);
+        layout.addView(terz2Edit);
+
+        // Round Score
+        TextView scoreLabel = new TextView(this);
+        scoreLabel.setText("Խոսացողը տարել է:");
+        scoreLabel.setTextSize(18);
+        scoreLabel.setTextColor(BLACK);
+        LinearLayout.LayoutParams scoreLabelParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        scoreLabelParams.setMargins(0, 20, 0, 0);
+        scoreLabel.setLayoutParams(scoreLabelParams);
+        layout.addView(scoreLabel);
+
+        EditText scoreEdit = new EditText(this);
+        scoreEdit.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_CLASS_TEXT);
+        scoreEdit.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        scoreEdit.setText(roundScore.getText().toString());
+        scoreEdit.setTextColor(BLACK);
+        layout.addView(scoreEdit);
+
+        // Team 1 Total Score
+        TextView team1Label = new TextView(this);
+        team1Label.setText("Հաշիվ +:");
+        team1Label.setTextSize(18);
+        team1Label.setTextColor(BLACK);
+        LinearLayout.LayoutParams team1LabelParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        team1LabelParams.setMargins(0, 20, 0, 0);
+        team1Label.setLayoutParams(team1LabelParams);
+        layout.addView(team1Label);
+
+        EditText team1Edit = new EditText(this);
+        team1Edit.setInputType(InputType.TYPE_CLASS_NUMBER);
+        team1Edit.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        team1Edit.setText(we.getText().toString());
+        team1Edit.setTextColor(BLACK);
+        layout.addView(team1Edit);
+
+        // Team 2 Total Score
+        TextView team2Label = new TextView(this);
+        team2Label.setText("Հաշիվ -:");
+        team2Label.setTextSize(18);
+        team2Label.setTextColor(BLACK);
+        LinearLayout.LayoutParams team2LabelParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        team2LabelParams.setMargins(0, 20, 0, 0);
+        team2Label.setLayoutParams(team2LabelParams);
+        layout.addView(team2Label);
+
+        EditText team2Edit = new EditText(this);
+        team2Edit.setInputType(InputType.TYPE_CLASS_NUMBER);
+        team2Edit.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        team2Edit.setText(you.getText().toString());
+        team2Edit.setTextColor(BLACK);
+        layout.addView(team2Edit);
+
+        // Round Number Info (display only)
+        TextView roundInfoLabel = new TextView(this);
+        roundInfoLabel.setText("Խոսացած:");
+        roundInfoLabel.setTextSize(18);
+        roundInfoLabel.setTextColor(BLACK);
+        LinearLayout.LayoutParams roundInfoLabelParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        roundInfoLabelParams.setMargins(0, 20, 0, 0);
+        roundInfoLabel.setLayoutParams(roundInfoLabelParams);
+        layout.addView(roundInfoLabel);
+
+        TextView roundInfoText = new TextView(this);
+        roundInfoText.setText(roundTextView.getText().toString());
+        roundInfoText.setTextSize(16);
+        roundInfoText.setTextColor(BLACK);
+        roundInfoText.setGravity(Gravity.CENTER);
+        roundInfoText.setPadding(10, 10, 10, 10);
+        roundInfoText.setBackgroundResource(R.drawable.button_border);
+        layout.addView(roundInfoText);
+
+        // Create dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(scrollView);
+
+        builder.setPositiveButton("Պահպանել", (dialog, which) -> {
+            try {
+                // Update terz values
+                int newTerz1 = Integer.parseInt(terz1Edit.getText().toString());
+                int newTerz2 = Integer.parseInt(terz2Edit.getText().toString());
+
+                // Update round score
+                String scoreText = scoreEdit.getText().toString().trim();
+                int newRoundScore = scoreText.isEmpty() ? 0 : evaluateExpression(scoreText);
+
+                // Update team totals
+                int newTeam1Total = Integer.parseInt(team1Edit.getText().toString());
+                int newTeam2Total = Integer.parseInt(team2Edit.getText().toString());
+
+                // Apply changes
+                roundTerz1 = newTerz1;
+                roundTerz2 = newTerz2;
+                totalTeam1 = newTeam1Total;
+                totalTeam2 = newTeam2Total;
+
+                // Update UI
+                terz1.setText(String.valueOf(roundTerz1));
+                terz2.setText(String.valueOf(roundTerz2));
+                roundScore.setText(String.valueOf(newRoundScore));
+                we.setText(String.valueOf(totalTeam1));
+                you.setText(String.valueOf(totalTeam2));
+
+                Toast.makeText(this, "Տվյալները պահպանվեցին", Toast.LENGTH_SHORT).show();
+
+                // Check for game over
+                if (totalTeam1 >= 301) gameOver(1);
+                if (totalTeam2 >= 301) gameOver(2);
+
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Please enter valid numbers", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("Չեղարկել", (dialog, which) -> dialog.cancel());
+
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setBackgroundDrawableResource(R.color.white);
+        dialog.show();
+
+        // Style buttons
+        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+        if (positiveButton != null) {
+            positiveButton.setTextColor(getResources().getColor(R.color.black));
+        }
+        if (negativeButton != null) {
+            negativeButton.setTextColor(getResources().getColor(R.color.black));
+        }
     }
 
     @SuppressLint("ResourceAsColor")
