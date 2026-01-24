@@ -92,6 +92,8 @@ public class MainActivity extends AppCompatActivity {
         quansh.setEnabled(said);
         roundNumber.setTextColor(RED);
         roundEdit.setEnabled(false);
+        roundScoreRed.setTextColor(BLACK);
+        roundScoreRed.setEnabled(false);
         btn3x = findViewById(R.id.btn3x);
         btn3x.setEnabled(false);
 
@@ -412,6 +414,8 @@ public class MainActivity extends AppCompatActivity {
 
                         quansh.setEnabled(true);
                         roundScoreRed.setVisibility(VISIBLE);
+                        roundScoreRed.setTextColor(Color.RED);
+                        roundScoreRed.setEnabled(true);
                         textView1.setTextColor(RED);
                         textView4.setTextColor(RED);
                         roundNumber.setTextColor(BLACK);
@@ -702,6 +706,9 @@ public class MainActivity extends AppCompatActivity {
                     roundEdit.setEnabled(true);
                     btn3x.setEnabled(false);
                     btn3x.setTextColor(Color.BLACK);
+
+                    roundScoreRed.setTextColor(Color.BLACK);
+                    roundScoreRed.setEnabled(false);
 
                     textView1.setTextColor(Color.BLACK);
                     textView1.setEnabled(false);
@@ -1292,6 +1299,9 @@ public class MainActivity extends AppCompatActivity {
             roundEdit.setEnabled(true);
             btn3x.setEnabled(false);
             btn3x.setTextColor(Color.BLACK);
+
+            roundScoreRed.setTextColor(Color.BLACK);
+            roundScoreRed.setEnabled(false);
 
             textView1.setTextColor(BLACK);
             textView1.setEnabled(false);
