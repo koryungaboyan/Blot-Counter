@@ -26,6 +26,12 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AlertDialog;
 import androidx.activity.EdgeToEdge;
+import android.content.SharedPreferences;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import java.util.Stack;
 import java.util.Timer;
@@ -48,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
     private int secondsPassed = 0;
     private Timer timer;
-    public int round_terz1, round_terz2, plus_score, minus_score, roundScoreWritten;
+    public int round_terz1, round_terz2, roundScoreWritten;
 
     @SuppressLint({ "MissingInflatedId", "WrongViewCast" })
     @Override
@@ -402,6 +408,7 @@ public class MainActivity extends AppCompatActivity {
                         roundNumber.setEnabled(false);
                         roundEdit.setEnabled(true);
                         btn3x.setEnabled(true);
+                        btn3x.setTextColor(Color.RED);
 
                         quansh.setEnabled(true);
                         roundScoreRed.setVisibility(VISIBLE);
@@ -667,8 +674,9 @@ public class MainActivity extends AppCompatActivity {
                     totalTeam2 += scoreTeam2;
 
                     // Update team scores (Total at top)
-                    you_top.setText(String.valueOf(totalTeam2));
-                    we_top.setText(String.valueOf(totalTeam1));
+                    // Update team scores (Total at top)
+                    you_top.setText("-");
+                    we_top.setText("+");
 
                     // Update row scores (Current round in list)
                     View[] rowViews = (View[]) roundScore.getTag();
@@ -693,6 +701,7 @@ public class MainActivity extends AppCompatActivity {
                     roundNumber.setClickable(true);
                     roundEdit.setEnabled(true);
                     btn3x.setEnabled(false);
+                    btn3x.setTextColor(Color.BLACK);
 
                     textView1.setTextColor(Color.BLACK);
                     textView1.setEnabled(false);
@@ -761,8 +770,9 @@ public class MainActivity extends AppCompatActivity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Team " + team + " wins!");
-        builder.setMessage("Time Elapsed: " + timeElapsed + "Start over?");
+        builder.setMessage("Time Elapsed: " + timeElapsed + "\nStart over?");
         builder.setPositiveButton("OK", (dialog, which) -> {
+            saveGameResult(team, timeElapsed);
             // Reset timer and go to StartActivity
             Intent intent = new Intent(MainActivity.this, StartActivity.class);
             startActivity(intent);
@@ -1041,8 +1051,8 @@ public class MainActivity extends AppCompatActivity {
                 terz1_top.setText(String.valueOf(roundTerz1));
                 terz2_top.setText(String.valueOf(roundTerz2));
                 roundScore.setText(String.valueOf(newRoundScore));
-                we_top.setText(String.valueOf(totalTeam1));
-                you_top.setText(String.valueOf(totalTeam2));
+                we_top.setText("+");
+                you_top.setText("-");
 
                 // Update row UI (Current round in list)
                 View[] rowViews = (View[]) roundScore.getTag();
@@ -1067,6 +1077,17 @@ public class MainActivity extends AppCompatActivity {
         });
 
         builder.setNegativeButton("Չեղարկել", (dialog, which) -> dialog.cancel());
+
+        // Button style setting needs to remain outside builder logic, but since we
+        // replaced the block,
+        // we can just let the standard AlertDialog.show() handle it or add the custom
+        // styling back if it was there.
+        // The previous code had custom styling blocks AFTER show(). Since I am
+        // replacing the block ending at 1080 approx,
+        // I should verify where the styling block was. It was at 1082+.
+        // Let's check the context again. I am replacing up to
+        // `builder.setNegativeButton`.
+        // The `dialog.show()` and subsequent styling logic is usually after.
 
         AlertDialog dialog = builder.create();
         dialog.getWindow().setBackgroundDrawableResource(R.color.white);
@@ -1152,8 +1173,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            you.setText(String.valueOf(totalTeam2));
-            we.setText(String.valueOf(totalTeam1));
+            you_top.setText("-");
+            we_top.setText("+");
 
             quanshed = false;
             sharped = false;
@@ -1162,6 +1183,7 @@ public class MainActivity extends AppCompatActivity {
             roundNumber.setClickable(true);
             roundEdit.setEnabled(true);
             btn3x.setEnabled(false);
+            btn3x.setTextColor(Color.BLACK);
             roundScore.setVisibility(VISIBLE);
             textView1.setTextColor(BLACK);
             textView1.setEnabled(false);
@@ -1248,9 +1270,20 @@ public class MainActivity extends AppCompatActivity {
                 totalTeam1 += 16;
             }
 
-            // Update UI
-            we.setText(String.valueOf(totalTeam1));
-            you.setText(String.valueOf(totalTeam2));
+            we_top.setText("+");
+            you_top.setText("-");
+
+            // Update row scores (Current round in list)
+            View[] rowViews = (View[]) roundScore.getTag();
+            if (rowViews != null) {
+                if (which == 0) {
+                    ((TextView) rowViews[0]).setText("0");
+                    ((TextView) rowViews[1]).setText("16");
+                } else {
+                    ((TextView) rowViews[0]).setText("16");
+                    ((TextView) rowViews[1]).setText("0");
+                }
+            }
 
             // End round logic (reset state)
             roundNumber.setTextColor(RED);
@@ -1258,6 +1291,7 @@ public class MainActivity extends AppCompatActivity {
             roundNumber.setClickable(true);
             roundEdit.setEnabled(true);
             btn3x.setEnabled(false);
+            btn3x.setTextColor(Color.BLACK);
 
             textView1.setTextColor(BLACK);
             textView1.setEnabled(false);
@@ -1288,5 +1322,27 @@ public class MainActivity extends AppCompatActivity {
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    private void saveGameResult(int winningTeam, String timeElapsed) {
+        SharedPreferences sharedPreferences = getSharedPreferences("GameHistory", MODE_PRIVATE);
+        String historyJson = sharedPreferences.getString("history_list", "[]");
+
+        try {
+            JSONArray historyArray = new JSONArray(historyJson);
+            JSONObject gameObj = new JSONObject();
+
+            String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
+            gameObj.put("date", currentDate);
+            gameObj.put("winner", "Team " + winningTeam);
+            gameObj.put("score", totalTeam1 + " - " + totalTeam2);
+            gameObj.put("time", timeElapsed);
+
+            historyArray.put(gameObj);
+
+            sharedPreferences.edit().putString("history_list", historyArray.toString()).apply();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

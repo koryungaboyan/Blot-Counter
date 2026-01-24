@@ -21,4 +21,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Blot Counter"
 include(":app")
- 

@@ -23,9 +23,10 @@ public class StartActivity extends AppCompatActivity {
             return insets;
         });
 
-        Button start;
+        Button start, history;
 
         start = findViewById(R.id.startButton);
+        history = findViewById(R.id.historyButton);
 
         start.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -33,6 +34,11 @@ public class StartActivity extends AppCompatActivity {
                 Intent intent = new Intent(StartActivity.this, MainActivity.class);
                 startActivity(intent);
             }
+        });
+
+        history.setOnClickListener(v -> {
+            Intent intent = new Intent(StartActivity.this, HistoryActivity.class);
+            startActivity(intent);
         });
     }
 }
